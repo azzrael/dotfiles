@@ -1,0 +1,18 @@
+* {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    text-shadow: none;
+    background: transparent;
+    color: rgba(200,200,220,100);
+}
+
+.module {
+    background: #222436;
+    border-radius: 15px;
+    padding: 8px 16px;
+}
