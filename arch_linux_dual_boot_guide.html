@@ -1,0 +1,811 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+:root {
+  --font-sans: Helvetica;
+  --font-mono: monospace;
+  
+  --color-text-primary: #ECE6E2;
+  --color-text-secondary: #e1d2e6;
+
+  --color-warning: #FDCF46;
+  --color-danger: #F87B94;
+  --color-success: #b0e079;
+
+  --color-background-primary: #2A292B;
+  --color-background-secondary: #19171C;
+  --color-background-info: #2d2130;
+  --color-background-warning: #302c21;
+  --color-background-danger: #311d22;
+  --color-background-success: #212c1d;
+
+  --color-border-tertiary: #383b44;
+  --color-border-info: #CE98D9;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans, sans-serif); color: var(--color-text-primary); background: var(--color-background-secondary); font-size: 15px; line-height: 1.6; padding: 15px;}
+
+.nav { display: flex; gap: 6px; flex-wrap: wrap; padding: 1rem 0 0.75rem; border-bottom: 0.5px solid var(--color-border-tertiary); margin-bottom: 1.5rem; }
+.nav-btn { background: transparent; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md, 8px); padding: 5px 12px; font-size: 14px; cursor: pointer; color: var(--color-text-secondary); transition: all 0.15s; white-space: nowrap; }
+.nav-btn:hover { background: var(--color-background-secondary); color: var(--color-text-primary); }
+.nav-btn.active { background: var(--color-background-secondary); color: var(--color-text-primary); border-color: var(--color-border-primary); font-weight: 500; }
+
+.section { display: none; }
+.section.active { display: block; }
+
+h2 { font-size: 18px; font-weight: 500; margin-bottom: 0.75rem; color: var(--color-text-primary); }
+h3 { font-size: 16px; font-weight: 500; margin: 1.25rem 0 0.5rem; color: var(--color-text-primary); }
+
+.step-block { border-radius: var(--border-radius-lg, 12px); padding: 1rem 1.25rem; margin-bottom: 0.75rem; background: var(--color-background-primary); }
+.step-num { display: inline-block; background: var(--color-background-secondary); border-radius: var(--border-radius-md, 8px); font-size: 16px; font-weight: 500; padding: 2px 8px; margin-bottom: 0.5rem; color: var(--color-text-secondary); }
+
+.note { background: var(--color-background-info); border: 0.5px solid var(--color-border-info); border-radius: var(--border-radius-md, 8px); padding: 0.75rem 1rem; margin: 0.8rem 0; font-size: 14px; color: var(--color-text-info); }
+.warn { background: var(--color-background-warning); border: 0.5px solid var(--color-warning); border-radius: var(--border-radius-md, 8px); padding: 0.75rem 1rem; margin: 0.5rem 0; font-size: 14px; color: var(--color-warning); }
+.danger { background: var(--color-background-danger); border: 0.5px solid var(--color-danger); border-radius: var(--border-radius-md, 8px); padding: 0.75rem 1rem; margin: 0.5rem 0; font-size: 14px; color: var(--color-danger); }
+.success { background: var(--color-background-success); border: 0.5px solid var(--color-success); border-radius: var(--border-radius-md, 8px); padding: 0.75rem 1rem; margin: 0.5rem 0; font-size: 14px; color: var(--color-success); }
+
+code { font-family: var(--font-mono, monospace); font-size: 15px; background: var(--color-background-secondary); padding: 1px 5px; border-radius: 4px; color: var(--color-text-primary); }
+pre { font-family: var(--font-mono, monospace); font-size: 12px; background: var(--color-background-secondary); border-radius: var(--border-radius-md, 8px); padding: 0.875rem 1rem; margin: 0.5rem 0; overflow-x: auto; line-height: 1.7; color: var(--color-text-primary); white-space: pre; }
+
+.pkg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 6px; margin: 0.5rem 0; }
+.pkg { background: var(--color-background-secondary); border-radius: var(--border-radius-md, 8px); padding: 6px 10px; font-size: 14px; }
+.pkg .name { font-family: var(--font-mono, monospace); font-weight: 500; color: var(--color-text-primary); }
+.pkg .desc { color: var(--color-text-secondary); font-size: 12px; margin-top: 2px; }
+
+.badge { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 4px; font-weight: 500; margin-left: 4px; vertical-align: middle; }
+.badge-aur { background: var(--color-background-warning); color: var(--color-warning); border: 0.5px solid var(--color-warning); }
+.badge-req { background: var(--color-background-danger); color: var(--color-danger); border: 0.5px solid var(--color-danger); }
+.badge-opt { background: var(--color-background-secondary); color: var(--color-text-secondary); }
+
+.archinstall-row { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; align-items: flex-start; }
+.archinstall-key { min-width: 180px; font-weight: 500; font-size: 13px; }
+.archinstall-val { font-size: 13px; color: var(--color-text-secondary); }
+.archinstall-val code { color: var(--color-text-primary); }
+
+.choice-block { border-left: 2px solid var(--color-border-info); padding-left: 0.75rem; margin: 0.5rem 0; }
+
+p { margin-bottom: 0.5rem; font-size: 15px;}
+ul, ol { padding-left: 1.25rem; margin-bottom: 0.5rem; }
+li { margin-bottom: 0.25rem; font-size: 15px; }
+</style>
+</head>
+<body>
+
+<div class="nav" id="nav">
+  <button class="nav-btn active" onclick="show('prep')">1. Vorbereitung</button>
+  <button class="nav-btn" onclick="show('bios')">2. BIOS/UEFI</button>
+  <button class="nav-btn" onclick="show('archinstall')">3. archinstall</button>
+  <button class="nav-btn" onclick="show('chroot')">4. Post-Install</button>
+  <button class="nav-btn" onclick="show('packages')">5. Packages</button>
+  <button class="nav-btn" onclick="show('hyprland')">6. Hyprland Setup</button>
+  <button class="nav-btn" onclick="show('grub')">7. GRUB Dual Boot</button>
+</div>
+
+<!-- ===== SECTION 1: VORBEREITUNG ===== -->
+<div id="prep" class="section active">
+  <h2>Vorbereitung unter Windows</h2>
+
+  <div class="step-block">
+    <div class="step-num">Schritt 1 — Neue SSD einbauen</div>
+    <p>Baue die <strong>Lexar SSD 512GB</strong> ein. Sie ist ein PCIe 4.0 NVMe M.2 Laufwerk – auf dem ASRock B650M PG RIPTIDE gibt es mehrere M.2 Slots. Verwende idealerweise M2_2 oder M2_3 (nicht den primären Slot, in dem die Patriot-SSD mit Windows sitzt).</p>
+    <div class="note">Schalte den PC aus, trenne den Strom, baue die SSD ein. Nach dem Einbau in Windows prüfen: Datenträgerverwaltung → die neue SSD sollte als "nicht initialisiert" erscheinen. Lass sie so – du brauchst sie nicht zu formatieren.</div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Schritt 2 — Bitlocker prüfen</div>
+    <p>Falls BitLocker auf der Windows-SSD aktiv ist: entweder deaktivieren oder den Recovery Key sichern. Dual Boot kann in seltenen Fällen BitLocker triggern.</p>
+    <pre>Einstellungen → Datenschutz & Sicherheit → Geräteverschlüsselung</pre>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Schritt 3 — Fast Startup deaktivieren</div>
+    <p>Windows Fast Startup (Schnellstart) kann Probleme mit Linux verursachen, besonders beim Zugriff auf NTFS-Partitionen.</p>
+    <pre>Systemsteuerung → Hardware und Sound → Energieoptionen
+→ "Auswählen, was beim Drücken des Netzschalters geschehen soll"
+→ "Schnellstart aktivieren" → DEAKTIVIEREN</pre>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Schritt 4 — Arch Linux ISO herunterladen</div>
+    <p>Lade das aktuelle Arch Linux ISO von der offiziellen Seite herunter:</p>
+    <pre>https://archlinux.org/download/</pre>
+    <p>Wähle einen deutschen Mirror (z.B. <code>ftp.tu-chemnitz.de</code> oder <code>mirror.netcologne.de</code>).</p>
+    <div class="note">Optional: Signaturprüfung mit GnuPG oder Rufus integrierter Prüfsumme.</div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Schritt 5 — Bootbaren USB-Stick erstellen</div>
+    <p>Verwende <strong>Rufus</strong> (empfohlen für Windows):</p>
+    <ul>
+      <li>Rufus herunterladen: <code>rufus.ie</code></li>
+      <li>USB-Stick (min. 2GB) einstecken</li>
+      <li>Gerät: deinen USB-Stick wählen</li>
+      <li>Boot-Auswahl: das Arch-ISO wählen</li>
+      <li><strong>Partitionsschema: GPT</strong> (da dein System UEFI nutzt)</li>
+      <li>Dateisystem: <strong>FAT32</strong></li>
+      <li>Modus: "DD-Image schreiben" wenn Rufus fragt</li>
+      <li>Auf "Start" klicken</li>
+    </ul>
+    <div class="warn">Achtung: Alle Daten auf dem USB-Stick werden gelöscht.</div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Schritt 6 — Windows vollständig herunterfahren</div>
+    <p>Nicht Neustart, sondern <strong>Herunterfahren</strong> – damit Fast Startup wirklich umgangen wird.</p>
+    <pre>Start → Herunterfahren (nicht Neustart)</pre>
+  </div>
+</div>
+
+<!-- ===== SECTION 2: BIOS ===== -->
+<div id="bios" class="section">
+  <h2>BIOS/UEFI Einstellungen (ASRock B650M PG RIPTIDE)</h2>
+
+  <div class="step-block">
+    <div class="step-num">BIOS aufrufen</div>
+    <p>Beim Start des PCs die <strong>DEL</strong> Taste drücken (ASRock: meist <strong>F2</strong>).</p>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Wichtige BIOS-Einstellungen</div>
+    <div class="archinstall-row">
+      <div class="archinstall-key">Secure Boot</div>
+      <div class="archinstall-val"><code>DISABLED</code> — Arch Linux funktioniert ohne Secure Boot problemlos. Wer es will, kann es später mit <code>sbctl</code> einrichten, aber für den Anfang: aus.</div>
+    </div>
+    <div class="archinstall-row">
+      <div class="archinstall-key">CSM (Compatibility Support Module)</div>
+      <div class="archinstall-val"><code>DISABLED</code> — Du verwendest UEFI, nicht Legacy BIOS. CSM muss aus.</div>
+    </div>
+    <div class="archinstall-row">
+      <div class="archinstall-key">Fast Boot (BIOS-Fast Boot)</div>
+      <div class="archinstall-val"><code>DISABLED</code> — Nicht zu verwechseln mit Windows Fast Startup. Im BIOS ebenfalls deaktivieren.</div>
+    </div>
+    <div class="archinstall-row">
+      <div class="archinstall-key">SATA/NVMe Mode</div>
+      <div class="archinstall-val"><code>AHCI</code> — sollte schon so sein, aber prüfen.</div>
+    </div>
+    <div class="archinstall-row">
+      <div class="archinstall-key">Above 4G Decoding</div>
+      <div class="archinstall-val"><code>ENABLED</code> — für die RX 6700 XT empfohlen.</div>
+    </div>
+    <div class="archinstall-row">
+      <div class="archinstall-key">Resizable BAR (SAM)</div>
+      <div class="archinstall-val"><code>ENABLED</code> — AMD Smart Access Memory für bessere GPU-Performance unter Linux.</div>
+    </div>
+    <div class="archinstall-row">
+      <div class="archinstall-key">DOCP/XMP</div>
+      <div class="archinstall-val"><code>ENABLED</code> — Für beste RAM Performance.</div>
+    </div>
+    <div class="success">Diese Einstellungen sind für deine Hardware optimal. AMD CPU + AMD GPU = native Linux-Treiberunterstützung, kein Proprietary-Chaos.</div>
+    <p>Speichere die BIOS-Einstellungen (F10).</p>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">USB booten</div>
+    <p>Dann beim nächsten Start <strong>F11</strong> drücken (ASRock Boot Menu) und den USB-Stick als Boot-Gerät wählen.</p>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Im Arch Boot Menü</div>
+    <p>Du siehst das Arch Linux Boot-Menü. Wähle:</p>
+    <pre>Arch Linux install medium (x86_64, UEFI)</pre>
+    <p>Nach kurzer Ladezeit landest du in einer Root-Shell. Die Tastatur ist standardmäßig US-Layout.</p>
+    <div class="note">Keyboard-Layout temporär auf Deutsch setzen: <code>loadkeys de-latin1</code></div>
+  </div>
+</div>
+
+<!-- ===== SECTION 3: ARCHINSTALL ===== -->
+<div id="archinstall" class="section">
+  <h2>archinstall — detaillierte Auswahlen</h2>
+
+  <div class="note">Zuerst optionaler aber empfohlener Check – stelle sicher dass du Internetverbindung hast: <code>ping -c 3 archlinux.org</code>. Falls Ethernet: sollte direkt funktionieren.</div>
+
+  <div class="step-block">
+    <div class="step-num">Update archinstall</div>
+    <pre>pacman -Sy archinstall</pre>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">archinstall starten</div>
+    <pre>archinstall</pre>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Mirrors / Mirror region</div>
+    <div class="archinstall-row">
+      <div class="archinstall-key">Mirror region:</div>
+      <div class="archinstall-val"><code>Austria</code> oder <code>Germany</code> — für schnelle Downloads</div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Locales</div>
+    <div class="archinstall-row">
+      <div class="archinstall-key">Keyboard layout:</div>
+      <div class="archinstall-val"><code>de-latin1</code></div>
+    </div>
+    <div class="archinstall-row">
+      <div class="archinstall-key">Locale language:</div>
+      <div class="archinstall-val"><code>de_AT.UTF-8</code> (oder <code>de_DE.UTF-8</code>, <code>en_US.UTF-8</code> je nach Präferenz)</div>
+    </div>
+    <div class="archinstall-row">
+      <div class="archinstall-key">Locale encoding:</div>
+      <div class="archinstall-val"><code>UTF-8</code></div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Disk configuration — WICHTIGSTER SCHRITT</div>
+    <div class="danger">Wähle auf keinen Fall die Patriot-SSD (Windows)! Nur die Lexar NM790 512GB verwenden.</div>
+    <div class="archinstall-row">
+      <div class="archinstall-key">Storage configuration:</div>
+      <div class="archinstall-val"><code>Use a best-effort default partition layout</code></div>
+    </div>
+    <div class="archinstall-row">
+      <div class="archinstall-key">Laufwerk wählen:</div>
+      <div class="archinstall-val">Die Lexar NM790 ~512GB – meist <code>/dev/nvme1n1</code> oder <code>/dev/nvme0n1</code>. Anhand der Größe identifizieren!</div>
+    </div>
+    <div class="archinstall-row">
+      <div class="archinstall-key">Filesystem:</div>
+      <div class="archinstall-val"><code>btrfs</code></div>
+    </div>
+    <div class="archinstall-row">
+      <div class="archinstall-key">Compression:</div>
+      <div class="archinstall-val"><code>zstd</code> — empfohlen für NVMe-SSDs, gute Kompression + Geschwindigkeit</div>
+    </div>
+    <div class="archinstall-row">
+      <div class="archinstall-key">Separate partition for /home:</div>
+      <div class="archinstall-val"><code>Ja</code> — empfohlen, separate Subvolumes für / und /home</div>
+    </div>
+    <div class="success">Btrfs hat für deinen Use Case keine Nachteile: NVMe-SSDs arbeiten gut mit btrfs, zstd-Kompression spart Platz auf der 500GB-SSD, und du bekommst Snapshots mit Snapper/Timeshift gratis.</div>
+    <div class="note">archinstall erstellt automatisch Btrfs-Subvolumes: <code>@</code> für /, <code>@home</code> für /home. Du bekommst auch eine 512MB EFI-Partition.</div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Bootloader</div>
+    <div class="archinstall-row">
+      <div class="archinstall-key">Bootloader:</div>
+      <div class="archinstall-val"><code>Grub</code> — du hast GRUB gewählt, perfekt für Dual Boot</div>
+    </div>
+    <div class="archinstall-row">
+      <div class="archinstall-key">Separate EFI partition:</div>
+      <div class="archinstall-val">archinstall erstellt automatisch <code>/boot/efi</code>. Wenn du gefragt wirst: Neue EFI-Partition auf der Lexar erstellen (nicht die Windows-EFI-Partition!).</div>
+    </div>
+    <div class="note">Für Dual Boot mit GRUB ist es am sichersten, eine separate EFI-Partition auf der Linux-SSD zu erstellen. GRUB wird Windows beim os-prober automatisch finden.</div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Swap</div>
+    <div class="archinstall-row">
+      <div class="archinstall-key">Swap:</div>
+      <div class="archinstall-val"><code>zram</code> — bei 32GB RAM brauchst du keinen Swap auf der SSD. zram ist ein komprimierter RAM-Swap, schnell und ohne SSD-Verschleiß.</div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Hostname</div>
+    <div class="archinstall-row">
+      <div class="archinstall-key">Hostname:</div>
+      <div class="archinstall-val">Frei wählbar</div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Root password</div>
+    <p>Vergib ein starkes Root-Passwort. Merke es dir.</p>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">User account</div>
+    <div class="archinstall-row">
+      <div class="archinstall-key">Username:</div>
+      <div class="archinstall-val">Dein gewünschter Benutzername (Kleinbuchstaben)</div>
+    </div>
+    <div class="archinstall-row">
+      <div class="archinstall-key">Password:</div>
+      <div class="archinstall-val">Sicheres Passwort vergeben</div>
+    </div>
+    <div class="archinstall-row">
+      <div class="archinstall-key">sudo:</div>
+      <div class="archinstall-val"><code>Yes</code> — User zur sudoers-Gruppe hinzufügen</div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Profile / Desktop Environment</div>
+    <div class="archinstall-row">
+      <div class="archinstall-key warn">AUSLASSEN! Sonst optional:</div>
+    </div>
+    <div class="archinstall-row">
+      <div class="archinstall-key">Profile:</div>
+      <div class="archinstall-val"><code>Desktop</code></div>
+    </div>
+    <div class="archinstall-row">
+      <div class="archinstall-key">Desktop environment:</div>
+      <div class="archinstall-val"><code>Hyprland</code></div>
+    </div>
+    <div class="archinstall-row">
+      <div class="archinstall-key">Graphics driver:</div>
+      <div class="archinstall-val"><code>AMD / ATI (open-source)</code> — für die RX 6700 XT. <strong>NICHT</strong> den proprietären AMDGPU-PRO wählen.</div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Audio</div>
+    <div class="archinstall-row">
+      <div class="archinstall-key">Audio:</div>
+      <div class="archinstall-val"><code>pipewire</code> — moderner Audio-Server, kompatibel mit Wayland/Hyprland</div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Kernels</div>
+    <div class="archinstall-row">
+      <div class="archinstall-key">Kernel:</div>
+      <div class="archinstall-val"><code>linux</code> — der Standard-Kernel.</div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Network configuration</div>
+    <div class="archinstall-row">
+      <div class="archinstall-key">Network:</div>
+      <div class="archinstall-val"><code>NetworkManager</code> — einfach zu verwalten, gute Integration mit Hyprland-Applets</div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Timezone</div>
+    <div class="archinstall-row">
+      <div class="archinstall-key">Timezone:</div>
+      <div class="archinstall-val"><code>Europe/Vienna</code></div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Zusätzliche Packages (in archinstall)</div>
+    <p>Im Feld für Additional packages kannst du schon jetzt hinzufügen:</p>
+    <pre>base-devel git vim neovim curl os-prober</pre>
+    <div class="note">Mehr Packages installieren wir nach dem Reboot mit pacman.</div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Installation starten</div>
+    <p>Alles überprüfen → <strong>Install</strong> wählen. archinstall formatiert die Lexar-SSD, installiert das Basissystem und Hyprland. Das dauert je nach Internetgeschwindigkeit 5–15 Minuten.</p>
+    <div class="warn">Während der Installation nichts unterbrechen!</div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Nach der Installation</div>
+    <p>archinstall fragt: "Möchtest du in die neue Installation chrooten?" → <strong>Ja</strong> wählen. Wir müssen noch einige Dinge konfigurieren.</p>
+    <div class="note">Falls du Nein gewählt hast: <code>arch-chroot /mnt</code></div>
+  </div>
+</div>
+
+<!-- ===== SECTION 4: POST-INSTALL ===== -->
+<div id="chroot" class="section">
+  <h2>Post-Installation (chroot & erster Boot)</h2>
+
+  <h3>Im chroot</h3>
+
+  <div class="step-block">
+    <div class="step-num">os-prober aktivieren (für GRUB + Windows)</div>
+    <p>Damit GRUB Windows auf der anderen SSD erkennt:</p>
+    <pre>nvim /etc/default/grub</pre>
+    <p>Folgende Zeile suchen und uncommenten (# entfernen):</p>
+    <pre>GRUB_DISABLE_OS_PROBER=false</pre>
+    <p>Dann GRUB-Config neu generieren:</p>
+    <pre>grub-mkconfig -o /boot/grub/grub.cfg</pre>
+    <div class="note">Falls Windows noch nicht erkannt wird: kein Problem, nach dem ersten Reboot nochmal ausführen. Windows muss gebootet sein / die Partition gemountet sein für os-prober.</div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Locale setzen oder weitere hinzufügen (falls nicht automatisch)</div>
+    <pre>nvim /etc/locale.gen</pre> öffnen, alle gewünschte Locale uncommenten (z.B. <code>de_AT.UTF-8</code> oder <code>en_US.UTF-8</code>) 
+    und eine Standardsprache setzen: <code>LANG=de_AT.UTF-8</code>, dann:
+    <pre>locale-gen</pre>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">systemctl enable — Services aktivieren</div>
+    <p>Diese Services müssen enabled sein:</p>
+    <pre>systemctl enable NetworkManager
+systemctl enable bluetooth
+systemctl enable fstrim.timer</pre>
+    <div class="note"><code>fstrim.timer</code> führt wöchentlich TRIM auf SSDs aus – wichtig für Langlebigkeit der Lexar-SSD.</div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">mkinitcpio (falls nötig)</div>
+    <p>Bei btrfs sollte <code>btrfs</code> in den HOOKS in <code>/etc/mkinitcpio.conf</code> enthalten sein. Prüfen:</p>
+    <pre>grep HOOKS /etc/mkinitcpio.conf</pre>
+    <p>Sollte etwa so aussehen:</p>
+    <pre>HOOKS=(base udev autodetect microcode modconf kms keyboard keymap consolefont block filesystems fsck)</pre>
+    <p>Falls <code>btrfs</code> fehlt, hinzufügen und dann:</p>
+    <pre>mkinitcpio -P</pre>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">AMD Microcode</div>
+    <p>Für deinen Ryzen 5 7600 ist <code>amd-ucode</code> wichtig. archinstall sollte es installiert haben. Prüfen:</p>
+    <pre>pacman -Q amd-ucode</pre>
+    <p>Falls nicht: <code>pacman -S amd-ucode</code> und dann <code>grub-mkconfig -o /boot/grub/grub.cfg</code></p>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Graphic Driver überprüfen und installieren</div>
+    <p>Eventuell wurden diese Driver bereits von archinstall installiert. Prüfen:</p>
+    <pre>pacman -Q mesa vulkan-radeon libva-mesa-driver mesa-vdpau xf86-video-amdgpu</pre>
+    <p>Falls nicht:</p>
+    <pre>sudo pacman -S mesa vulkan-radeon libva-mesa-driver mesa-vdpau xf86-video-amdgpu</pre>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Environment installieren (Hyprland / Wayland / Display)</div>
+    <div class="pkg-grid">
+      <div class="pkg"><div class="name">mesa</div><div class="desc"></div></div>
+      <div class="pkg"><div class="name">hyprland</div><div class="desc"></div></div>
+      <div class="pkg"><div class="name">hyprpolkitagent</div><div class="desc"></div></div>
+      <div class="pkg"><div class="name">kitty</div><div class="desc"></div></div>
+      <div class="pkg"><div class="name">xdg-desktop-portal-hyprland</div><div class="desc">Portals für Wayland Apps (Screen Share etc.)</div></div>
+      <div class="pkg"><div class="name">xdg-desktop-portal-gtk</div><div class="desc">Fallback Portal für GTK-Apps</div></div>
+      <div class="pkg"><div class="name">xdg-user-dirs</div><div class="desc">Benutzer-Verzeichnisse</div></div>
+      <div class="pkg"><div class="name">xdg-utils</div><div class="desc">XDG Utilities</div></div>
+      <div class="pkg"><div class="name">xwaylandvideobridge <span class="badge badge-opt">optional</span></div><div class="desc">XWayland Screen Sharing</div></div>
+      <div class="pkg"><div class="name">wl-clipboard</div><div class="desc">Clipboard für Wayland (copy/paste)</div></div>
+      <div class="pkg"><div class="name">qt5-wayland</div><div class="desc">Qt5 Wayland Support</div></div>
+      <div class="pkg"><div class="name">qt6-wayland</div><div class="desc">Qt6 Wayland Support</div></div>
+      <div class="pkg"><div class="name">xorg-wayland</div><div class="desc">xorg Wayland Support</div></div>
+    </div>
+  <pre>sudo pacman -S mesa hyprland hyprpolkitagent kitty xdg-desktop-portal-hyprland xdg-desktop-portal-gtk xdg-user-dirs xdg-utils wl-clipboard qt5-wayland qt6-wayland xorg-wayland</pre>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">chroot verlassen und rebooten</div>
+    <pre>exit
+reboot</pre>
+    <div class="warn">USB-Stick beim Reboot entfernen (oder BIOS Boot Order wieder auf SSD setzen)!</div>
+  </div>
+
+  <h3>Nach dem ersten Reboot</h3>
+
+  <div class="step-block">
+    <div class="step-num">Login</div>
+    <p>Du landest in einer TTY wenn kein Display Manager installiert ist. Logge dich mit deinem User ein.</p>
+    <p>Hyprland starten: <code>Hyprland</code></p>
+    <p class="danger">eventuell auch <code>start-Hyprland</code></p>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">yay (AUR Helper) installieren</div>
+    <p>Du brauchst yay für walker-bin und elephant-bin. Als normaler User (nicht root):</p>
+    <pre>cd /tmp
+git clone https://aur.archlinux.org/yay.git
+cd yay
+makepkg -si</pre>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">System aktualisieren</div>
+    <pre>sudo pacman -Syu</pre>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">GRUB os-prober nochmal ausführen</div>
+    <p>Jetzt wo Windows auf der anderen SSD liegt, kann os-prober es finden:</p>
+    <pre>sudo os-prober
+sudo grub-mkconfig -o /boot/grub/grub.cfg</pre>
+    <p>Windows sollte nun im GRUB-Menü erscheinen.</p>
+    <div class="warn">Falls os-prober die Windows-Partition nicht findet: prüfe ob die Patriot-SSD sichtbar ist mit <code>lsblk</code>. Eventuell muss die EFI-Partition temporär gemountet werden.</div>
+  </div>
+</div>
+
+<!-- ===== SECTION 5: PACKAGES ===== -->
+<div id="packages" class="section">
+  <h2>Packages die du installieren musst</h2>
+  <div class="note">Alles was archinstall bereits installiert (Linux-Kernel, NetworkManager, pipewire, etc.) wird hier nicht nochmal aufgelistet.</div>
+
+  <div class="step-block">
+  <div class="step-num">Deine gewünschten Tools</div>
+    <div class="pkg-grid">
+      <div class="pkg"><div class="name">waybar</div><div class="desc">Status-Bar für Hyprland</div></div>
+      <div class="pkg"><div class="name">hyprpaper</div><div class="desc">Wallpaper-Daemon</div></div>
+      <div class="pkg"><div class="name">hyprlock</div><div class="desc">Screen Locker</div></div>
+      <div class="pkg"><div class="name">hypridle</div><div class="desc">Idle-Daemon für Autolock</div></div>
+      <div class="pkg"><div class="name">hyprpicker</div><div class="desc">Color Picker für Hyprland</div></div>
+      <div class="pkg"><div class="name">thunar</div><div class="desc">GTK Dateimanager</div></div>
+      <div class="pkg"><div class="name">walker-bin <span class="badge badge-aur">AUR</span></div><div class="desc">App Launcher</div></div>
+      <div class="pkg"><div class="name">elephant-bin <span class="badge badge-aur">AUR</span></div><div class="desc">Walker Dependency</div></div>
+    </div>
+  <pre>sudo pacman -S waybar hyprpaper hyprlock hypridle hyprpicker thunar</pre>
+  <pre>yay -S walker-bin elephant-bin</pre>
+  </div>
+
+  
+  <div class="step-block">
+  <div class="step-num">Fonts (wichtig für Waybar & Hyprland)</div>
+    <div class="pkg-grid">
+      <div class="pkg"><div class="name">ttf-font-awesome</div><div class="desc">Icons für Waybar</div></div>
+      <div class="pkg"><div class="name">noto-fonts</div><div class="desc">Basisschriften, Unicode</div></div>
+      <div class="pkg"><div class="name">noto-fonts-emoji</div><div class="desc">Emoji-Support</div></div>
+      <div class="pkg"><div class="name">noto-fonts-cjk</div><div class="desc">CJK-Schriften (Chinesisch, Japanisch, Koreanisch)</div></div>
+      <div class="pkg"><div class="name">ttf-jetbrains-mono-nerd</div><div class="desc">Nerd Font für Terminal (Kitty)</div></div>
+      <div class="pkg"><div class="name">ttf-nerd-fonts-symbols</div><div class="desc">Symbole für Waybar etc.</div></div>
+    </div>
+  <pre>sudo pacman -S ttf-font-awesome noto-fonts noto-fonts-emoji noto-fonts-cjk ttf-jetbrains-mono-nerd ttf-nerd-fonts-symbols</pre>
+  </div>
+
+  <div class="step-block">
+  <div class="step-num">Audio (Pipewire Ergänzungen)</div>
+    <div class="pkg-grid">
+      <div class="pkg"><div class="name">wireplumber</div><div class="desc">Pipewire Session Manager</div></div>
+      <div class="pkg"><div class="name">pipewire-alsa</div><div class="desc">ALSA via Pipewire</div></div>
+      <div class="pkg"><div class="name">pipewire-pulse</div><div class="desc">PulseAudio-Kompatibilität</div></div>
+      <div class="pkg"><div class="name">pipewire-jack</div><div class="desc">JACK Audio-Kompatibilität</div></div>
+      <div class="pkg"><div class="name">pavucontrol</div><div class="desc">Audio Mixer GUI</div></div>
+    </div>
+  <pre>sudo pacman -S wireplumber pipewire-alsa pipewire-pulse pipewire-jack pavucontrol</pre>
+  <div class="note">archinstall mit pipewire installiert meist wireplumber schon. Prüfe mit <code>pacman -Q wireplumber</code></div>
+  </div>
+
+  <div class="step-block">
+  <div class="step-num">Thunar Ergänzungen</div>
+    <div class="pkg-grid">
+      <div class="pkg"><div class="name">thunar-archive-plugin</div><div class="desc">Archiv-Support in Thunar</div></div>
+      <div class="pkg"><div class="name">thunar-volman</div><div class="desc">Automatisches Einhängen</div></div>
+      <div class="pkg"><div class="name">gvfs</div><div class="desc">Virtuelles Filesystem (Trash etc.)</div></div>
+      <div class="pkg"><div class="name">gvfs-mtp</div><div class="desc">MTP Support für Smartphones</div></div>
+      <div class="pkg"><div class="name">file-roller</div><div class="desc">Archivmanager</div></div>
+      <div class="pkg"><div class="name">tumbler</div><div class="desc">Thumbnailer für Thunar</div></div>
+    </div>
+  <pre>sudo pacman -S thunar-archive-plugin thunar-volman gvfs gvfs-mtp file-roller tumbler</pre>
+  </div>
+
+  <div class="step-block">
+  <div class="step-num">Nützliche System-Tools</div>
+    <div class="pkg-grid">
+      <div class="pkg"><div class="name">ntfs-3g</div><div class="desc">NTFS-Zugriff (Windows-SSD)</div></div>
+      <div class="pkg"><div class="name">bluez</div><div class="desc">Bluetooth Stack</div></div>
+      <div class="pkg"><div class="name">bluez-utils</div><div class="desc">bluetoothctl etc.</div></div>
+      <div class="pkg"><div class="name">playerctl</div><div class="desc">Media-Keys Support</div></div>
+      <div class="pkg"><div class="name">grim</div><div class="desc">Screenshot Tool (Wayland)</div></div>
+      <div class="pkg"><div class="name">slurp</div><div class="desc">Bereich auswählen für grim</div></div>
+      <div class="pkg"><div class="name">hyprshot<span class="badge badge-aur">AUR</span></div><div class="desc">Screenshot Tool für Hyprland</div></div>
+      <div class="pkg"><div class="name">timeshift</div><div class="desc">Btrfs Snapshots / Backups</div></div>
+      <div class="pkg"><div class="name">swaync</div><div class="desc">Notification Center für Wayland</div></div>
+      <div class="pkg"><div class="name">network-manager-applet</div><div class="desc">Netzwerkverwaltung für Desktop-Umgebungen</div></div>
+      <div class="pkg"><div class="name">openssh</div><div class="desc">SSH Client und Server</div></div>
+      <div class="pkg"><div class="name">bluetui</div><div class="desc">TUI für Bluetooth-Verwaltung</div></div>
+    </div>
+  <pre>sudo pacman -S ntfs-3g bluez bluez-utils playerctl grim slurp timeshift swaync network-manager-applet openssh bluetui</pre>
+  <pre>yay -S hyprshot</pre>
+  </div>
+
+  <div class="step-block">
+  <div class="step-num">Optional aber empfohlen</div>
+    <div class="pkg-grid">
+      <div class="pkg"><div class="name">firefox</div><div class="desc">Browser mit Wayland-Support</div></div>
+      <div class="pkg"><div class="name">zen-browser-bin<span class="badge badge-aur">AUR</span></div><div class="desc">Alternativer Browser mit Fokus auf Datenschutz</div></div>
+      <div class="pkg"><div class="name">btop</div><div class="desc">System Monitor TUI</div></div>
+      <div class="pkg"><div class="name">unzip</div><div class="desc">Archiv-Tools</div></div>
+      <div class="pkg"><div class="name">man-db / man-pages</div><div class="desc">Man Pages</div></div>
+      <div class="pkg"><div class="name">starship</div><div class="desc">Modernes Shell-Prompt</div></div>
+      <div class="pkg"><div class="name">lazygit</div><div class="desc">TUI für Git</div></div>
+    </div>
+  <pre>sudo pacman -S firefox btop unzip man-db man-pages starship lazygit</pre>
+  <pre>yay -S zen-browser-bin</pre>
+  </div>
+
+  <div class="step-block">
+  <div class="step-num">Cli Tools</div>
+    <div class="pkg-grid">
+      <div class="pkg"><div class="name">fzf</div><div class="desc">Fuzzy Finder</div></div>
+      <div class="pkg"><div class="name">bat</div><div class="desc">Cat with Syntax Highlighting</div></div>
+      <div class="pkg"><div class="name">ripgrep</div><div class="desc">Recursive Search Tool</div></div>
+      <div class="pkg"><div class="name">zoxide</div><div class="desc">Smart Directory Navigation</div></div>
+      <div class="pkg"><div class="name">fd</div><div class="desc">Fast File Search</div></div>
+      <div class="pkg"><div class="name">eza</div><div class="desc">Modern File Listing</div></div>
+      <div class="pkg"><div class="name">fastfetch</div><div class="desc">System Information Tool</div></div>
+    </div>
+  <pre>sudo pacman -S fzf bat ripgrep zoxide fd eza fastfetch</pre>
+  </div>
+
+  <div class="step-block">
+  <div class="step-num">Lazyvim</div>
+  <p>Clone the starter repository:</p>
+  <pre>git clone https://github.com/LazyVim/starter ~/.config/nvim</pre>
+  <p>Remove the .git directory to avoid issues with updates:</p>
+  <pre>rm -rf ~/.config/nvim/.git</pre>
+  <p>Start Neovim to trigger the installation of plugins:</p>
+  <pre>nvim</pre>
+  <p>In Neovim folgendes ausführen:</p>
+  <pre>:lazyHealth</pre>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">systemctl enable nach Package-Installation</div>
+    <pre>sudo systemctl enable bluetooth
+sudo systemctl enable fstrim.timer</pre>
+    <p>Pipewire/wireplumber werden als User-Services gestartet (kein systemctl enable als root nötig, automatisch via systemd user session):</p>
+    <pre>systemctl --user enable pipewire pipewire-pulse wireplumber</pre>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">User Directories updaten</div>
+    <pre>xdg-user-dirs-update</pre>
+  </div>
+</div>
+
+<!-- ===== SECTION 6: HYPRLAND ===== -->
+<div id="hyprland" class="section">
+  <h2>Hyprland Konfiguration</h2>
+  <div class="warn">Versuchen Clipboard History mit elephant funktionierend zu machen, sonst cliphist installieren und versuchen</div>
+  <div class="warn">Display Manager installieren und konfigurieren, z.B.: LY</div>
+  <div class="note">Hyprland speichert seine Config in <code>~/.config/hypr/hyprland.conf</code>. archinstall hat eventuell eine Standard-Config angelegt.</div>
+
+  <div class="step-block">
+    <div class="step-num">Konfig-Verzeichnisse erstellen</div>
+    <pre>mkdir -p ~/.config/hypr
+mkdir -p ~/.config/waybar
+mkdir -p ~/.config/kitty</pre>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Wichtige hyprland.conf Einstellungen (AMD RX 6700 XT)</div>
+    <p>In <code>~/.config/hypr/hyprland.conf</code> folgendes setzen/prüfen:</p>
+    <pre># GPU-spezifisch für AMD (RDNA2)
+env = WLR_NO_HARDWARE_CURSORS,1    # Falls Cursor-Probleme
+env = LIBVA_DRIVER_NAME,radeonsi
+env = AMD_VULKAN_ICD,RADV
+
+# Wayland-spezifisch
+env = XDG_CURRENT_DESKTOP,Hyprland
+env = XDG_SESSION_TYPE,wayland
+env = XDG_SESSION_DESKTOP,Hyprland
+env = QT_QPA_PLATFORM,wayland
+env = GDK_BACKEND,wayland
+
+# exec-once: bei Hyprland-Start ausführen
+exec-once = waybar
+exec-once = hyprpaper
+exec-once = hypridle
+exec-once = /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
+exec-once = gnome-keyring-daemon --start --components=secrets
+exec-once = wl-paste --type text --watch cliphist store # falls ich cliphist verwenden will aber ist noch nicht installiert
+exec-once = wl-paste --type image --watch cliphist store</pre>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Walker als App Launcher einbinden</div>
+    <p>In hyprland.conf einen Keybind für walker setzen:</p>
+    <pre>bind = SUPER, SPACE, exec, walker    # oder dein bevorzugter Shortcut</pre>
+    <div class="note">Walker-Konfiguration: <code>~/.config/walker/config.toml</code></div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">hyprpaper Konfiguration</div>
+    <p>Erstelle <code>~/.config/hypr/hyprpaper.conf</code>:</p>
+    <pre>preload = /path/to/your/wallpaper.jpg
+wallpaper = ,/path/to/your/wallpaper.jpg</pre>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">hypridle Konfiguration</div>
+    <p>Erstelle <code>~/.config/hypr/hypridle.conf</code>:</p>
+    <pre>general {
+    lock_cmd = hyprlock
+    unlock_cmd = notify-send "Unlocked"
+    before_sleep_cmd = hyprlock
+}
+
+listener {
+    timeout = 300       # 5 Minuten: Screen dimmen
+}
+
+listener {
+    timeout = 600       # 10 Minuten: Lock
+    on-timeout = hyprlock
+}</pre>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Keyboard Layout in Hyprland</div>
+    <pre>input {
+    kb_layout = de
+    kb_variant = nodeadkeys   # kein dead keys, falls gewünscht
+    follow_mouse = 1
+    touchpad {
+        natural_scroll = false
+    }
+}</pre>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Kitty Terminal Config</div>
+    <p>Erstelle <code>~/.config/kitty/kitty.conf</code> – minimales Beispiel:</p>
+    <pre>font_family      JetBrainsMono Nerd Font
+font_size        12.0
+enable_audio_bell no</pre>
+  </div>
+</div>
+
+<!-- ===== SECTION 7: GRUB ===== -->
+<div id="grub" class="section">
+  <h2>GRUB Dual Boot Setup</h2>
+
+  <div class="step-block">
+    <div class="step-num">Übersicht</div>
+    <p>GRUB auf der Lexon-SSD (Linux) erkennt via os-prober Windows auf der Patriot-SSD automatisch. Du brauchst Windows nicht anfassen.</p>
+    <div class="success">Da beide SSDs getrennte Laufwerke sind, ist das Risiko für Windows sehr gering. GRUB schreibt nur auf die EFI-Partition der Linux-SSD.</div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Schritt 1 — os-prober aktivieren</div>
+    <p>In <code>/etc/default/grub</code> sicherstellen:</p>
+    <pre>GRUB_DISABLE_OS_PROBER=false</pre>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Schritt 2 — Windows-Partition prüfen</div>
+    <pre>lsblk -f</pre>
+    <p>Du solltest die Patriot-SSD sehen, z.B. als <code>/dev/nvme0n1</code> mit NTFS-Partitionen.</p>
+    <div class="note">Falls die Windows-EFI-Partition nicht automatisch erkannt wird:<br><code>sudo mount /dev/nvme0n1p1 /mnt/windows-efi</code> (Pfad anpassen)</div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Schritt 3 — GRUB Config neu generieren</div>
+    <pre>sudo os-prober
+sudo grub-mkconfig -o /boot/grub/grub.cfg</pre>
+    <p>Die Ausgabe von os-prober sollte etwa zeigen:</p>
+    <pre>/dev/nvme0n1p2@/efi/Microsoft/Boot/bootmgfw.efi:Windows Boot Manager:Windows:efi</pre>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Schritt 4 — GRUB anpassen (optional)</div>
+    <p>In <code>/etc/default/grub</code>:</p>
+    <pre>GRUB_TIMEOUT=5           # 5 Sekunden Wartezeit
+GRUB_DEFAULT=0           # Standardmäßig Arch booten
+GRUB_TIMEOUT_STYLE=menu  # Menü immer anzeigen</pre>
+    <p>Nach Änderungen immer:</p>
+    <pre>sudo grub-mkconfig -o /boot/grub/grub.cfg</pre>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">GRUB Theme (optional)</div>
+    <p>Ein schönes GRUB Theme via AUR:</p>
+    <pre>yay -S grub-theme-vimix    # oder catppuccin-grub-theme-git</pre>
+    <p>Theme in <code>/etc/default/grub</code> setzen:</p>
+    <pre>GRUB_THEME="/usr/share/grub/themes/vimix/theme.txt"</pre>
+    <pre>sudo grub-mkconfig -o /boot/grub/grub.cfg</pre>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">BIOS Boot Order</div>
+    <p>Im BIOS die Lexar-SSD (Linux) als erstes Boot-Gerät setzen. GRUB zeigt dir dann bei jedem Start das Menü mit Arch Linux und Windows zur Auswahl.</p>
+    <div class="note">Alternativ: Windows direkt über BIOS Boot Menu (F11) booten, ohne die Boot Order dauerhaft zu ändern.</div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-num">Zusammenfassung Boot-Flow</div>
+    <pre>PC einschalten
+    → UEFI lädt GRUB von Lexar-SSD EFI
+    → GRUB Menü (5 Sek.)
+        ├── Arch Linux  → Kernel auf Lexar-SSD
+        └── Windows     → Windows Bootmanager auf Patriot-SSD</pre>
+  </div>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const idx = ['prep','bios','archinstall','chroot','packages','hyprland','grub'].indexOf(id);
+  document.querySelectorAll('.nav-btn')[idx].classList.add('active');
+  window.scrollTo(0, 0);
+}
+</script>
+</body>
+</html>
